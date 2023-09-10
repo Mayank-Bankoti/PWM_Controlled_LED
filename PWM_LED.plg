@@ -1,0 +1,17 @@
+<html>
+<body>
+<pre>
+<h1>µVision3 Build Log</h1>
+<h2>Project:</h2>
+C:\Users\mayan\Documents\ARM\PWM_LED\PWM_LED.uv2
+Project File Date:  09/09/2023
+
+<h2>Output:</h2>
+Build target 'Target 1'
+"PWM_LED" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling PWM_LED.c...
+linking...
+Program Size: data=1288 const=16 code=624
+creating hex file from "PWM_LED"...
+"PWM_LED" - 0 Error(s), 0 Warning(s).

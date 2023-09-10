@@ -1,0 +1,287 @@
+ARM COMPILER V2.40a,  PWM_LED                                                              10/09/23  07:56:02  PAGE 1   
+
+
+ARM COMPILER V2.40a, COMPILATION OF MODULE PWM_LED
+OBJECT MODULE PLACED IN PWM_LED.OBJ
+COMPILER INVOKED BY: C:\Keil\ARM\BIN\CA.exe PWM_LED.c THUMB BROWSE DEBUG TABS(4) 
+
+stmt  level    source
+
+    1          #include <lpc214x.h>
+    2          void initPWM(void);                        // Initialize PWM
+    3          void initClocks(void);           // Setup PLL and Clock Frequency
+    4          int main(void)
+    5          {
+    6   1        initClocks(); //Initialize CPU and Peripheral Clocks @ 60Mhz
+    7   1        initPWM(); //Initialize PWM
+    8   1        //IO1DIR = 0x1; This is not needed!
+    9   1        //Also by default all pins are configured as Inputs after MCU Reset.
+   10   1         
+   11   1          while(1)
+   12   1          {
+   13   2          if( !((IO1PIN) & (1<<16)) ) // Check P1.16
+   14   2          {
+   15   3            PWMMR4 = 2500; //T-ON=25% , Hence 25% Bright
+   16   3            PWMLER = (1<<4); //Update Latch Enable bit for PWMMR4
+   17   3          }
+   18   2          else if( !((IO1PIN) & (1<<17)) ) // Check P1.17
+   19   2          {
+   20   3            PWMMR4 = 5000; //50% Bright
+   21   3            PWMLER = (1<<4);
+   22   3          }
+   23   2          else if( !((IO1PIN) & (1<<18)) ) // Check P1.18
+   24   2          {
+   25   3            PWMMR4 = 7500; //75% Bright
+   26   3            PWMLER = (1<<4);
+   27   3          }
+   28   2          else if( !((IO1PIN) & (1<<19)) ) // Check P1.19
+   29   2          {
+   30   3            PWMMR4 = 10000; //100% Bright
+   31   3            PWMLER = (1<<4);
+   32   3          }
+   33   2          }
+   34   1          //return 0; //normally this wont execute ever
+   35   1      }
+   36          void initPWM(void)
+   37          {
+   38   1        PINSEL0 = (PINSEL0 & ~(1 << 16)) | (1 << 17); // Select PWM4 output for Pin0.8
+   39   1        PWMPCR = 0x0; //Select Single Edge PWM - by default its single Edged so this line can be removed
+   40   1        PWMPR = 60-1; // 1 micro-second resolution
+   41   1        PWMMR0 = 10000; // 10ms period duration
+   42   1        PWMMR4 = 500; // 0.5ms - pulse duration i.e width (Brigtness level)
+   43   1        PWMMCR = (1<<1); // Reset PWMTC on PWMMR0 match
+   44   1        PWMLER = (1<<0)|(1<<4); // update MR0 and MR4
+   45   1        PWMPCR = (1<<12); // enable PWM output
+   46   1        PWMTCR = (1<<1) ; //Reset PWM TC & PR
+   47   1        //Now , the final moment - enable everything
+   48   1        PWMTCR = (1<<0) | (1<<3); // enable counters and PWM Mode
+   49   1        //PWM Generation goes active now - LED must be 25% Bright after boot!!
+   50   1        //Now you can get the PWM output at Pin P0.8!
+   51   1      }
+   52          void initClocks(void)
+   53          {
+   54   1        PLL0CON = 0x01;   //Enable PLL
+   55   1        PLL0CFG = 0x24;   //Multiplier and divider setup
+   56   1        PLL0FEED = 0xAA;  //Feed sequence
+   57   1        PLL0FEED = 0x55;
+   58   1        
+   59   1        while(!(PLL0STAT & 0x00000400)); //is locked?
+ARM COMPILER V2.40a,  PWM_LED                                                              10/09/23  07:56:02  PAGE 2   
+
+   60   1          
+   61   1        PLL0CON = 0x03;   //Connect PLL after PLL is locked
+   62   1        PLL0FEED = 0xAA;  //Feed sequence
+   63   1        PLL0FEED = 0x55;
+   64   1        VPBDIV = 0x01;    // PCLK is same as CCLK i.e.60 MHz
+   65   1      }
+ARM COMPILER V2.40a,  PWM_LED                                                              10/09/23  07:56:02  PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+
+*** EXTERNALS:
+ EXTERN NUMBER (__startup)
+
+
+
+*** PUBLICS:
+ PUBLIC         initPWM?T
+ PUBLIC         initClocks?T
+ PUBLIC         main
+
+
+
+*** CODE SEGMENT '?PR?main?PWM_LED':
+    4: int main(void)
+ 00000000  B500      PUSH        {LR}
+    6:   initClocks(); //Initialize CPU and Peripheral Clocks @ 60Mhz
+ 00000002  F7FF      BL          initClocks?T  ; T=0x0001  (1)
+ 00000004  FFFD      BL          initClocks?T  ; T=0x0001  (2)
+    7:   initPWM(); //Initialize PWM
+ 00000006  F7FF      BL          initPWM?T  ; T=0x0001  (1)
+ 00000008  FFFB      BL          initPWM?T  ; T=0x0001  (2)
+   11:     while(1)
+ 0000000A          L_3:
+   13:     if( !((IO1PIN) & (1<<16)) ) // Check P1.16
+ 0000000A  4800      LDR         R0,=0xE0028010
+ 0000000C  6800      LDR         R0,[R0,#0x0]
+ 0000000E  4800      LDR         R1,=0x10000
+ 00000010  4208      TST         R0,R1
+ 00000012  D106      BNE         L_5  ; T=0x00000022
+   15:       PWMMR4 = 2500; //T-ON=25% , Hence 25% Bright
+ 00000014  4800      LDR         R1,=0x9C4
+ 00000016  4800      LDR         R0,=0xE0014040
+ 00000018  6001      STR         R1,[R0,#0x0]
+   16:       PWMLER = (1<<4); //Update Latch Enable bit for PWMMR4
+ 0000001A  2110      MOV         R1,#0x10
+ 0000001C  4800      LDR         R0,=0xE0014050
+ 0000001E  6001      STR         R1,[R0,#0x0]
+   17:     }
+ 00000020  E7F3      B           L_3  ; T=0x0000000A
+ 00000022          L_5:
+   18:     else if( !((IO1PIN) & (1<<17)) ) // Check P1.17
+ 00000022  4800      LDR         R0,=0xE0028010
+ 00000024  6800      LDR         R0,[R0,#0x0]
+ 00000026  4800      LDR         R1,=0x20000
+ 00000028  4208      TST         R0,R1
+ 0000002A  D106      BNE         L_7  ; T=0x0000003A
+   20:       PWMMR4 = 5000; //50% Bright
+ 0000002C  4800      LDR         R1,=0x1388
+ 0000002E  4800      LDR         R0,=0xE0014040
+ 00000030  6001      STR         R1,[R0,#0x0]
+   21:       PWMLER = (1<<4);
+ 00000032  2110      MOV         R1,#0x10
+ 00000034  4800      LDR         R0,=0xE0014050
+ 00000036  6001      STR         R1,[R0,#0x0]
+   22:     }
+ 00000038  E7E7      B           L_3  ; T=0x0000000A
+ 0000003A          L_7:
+   23:     else if( !((IO1PIN) & (1<<18)) ) // Check P1.18
+ 0000003A  4800      LDR         R0,=0xE0028010
+ 0000003C  6800      LDR         R0,[R0,#0x0]
+ 0000003E  4800      LDR         R1,=0x40000
+ 00000040  4208      TST         R0,R1
+ 00000042  D106      BNE         L_9  ; T=0x00000052
+   25:       PWMMR4 = 7500; //75% Bright
+ 00000044  4800      LDR         R1,=0x1D4C
+ 00000046  4800      LDR         R0,=0xE0014040
+ 00000048  6001      STR         R1,[R0,#0x0]
+ARM COMPILER V2.40a,  PWM_LED                                                              10/09/23  07:56:02  PAGE 4   
+
+   26:       PWMLER = (1<<4);
+ 0000004A  2110      MOV         R1,#0x10
+ 0000004C  4800      LDR         R0,=0xE0014050
+ 0000004E  6001      STR         R1,[R0,#0x0]
+   27:     }
+ 00000050  E7DB      B           L_3  ; T=0x0000000A
+ 00000052          L_9:
+   28:     else if( !((IO1PIN) & (1<<19)) ) // Check P1.19
+ 00000052  4800      LDR         R0,=0xE0028010
+ 00000054  6800      LDR         R0,[R0,#0x0]
+ 00000056  4800      LDR         R1,=0x80000
+ 00000058  4208      TST         R0,R1
+ 0000005A  D1D6      BNE         L_3  ; T=0x0000000A
+   30:       PWMMR4 = 10000; //100% Bright
+ 0000005C  4800      LDR         R1,=0x2710
+ 0000005E  4800      LDR         R0,=0xE0014040
+ 00000060  6001      STR         R1,[R0,#0x0]
+   31:       PWMLER = (1<<4);
+ 00000062  2110      MOV         R1,#0x10
+ 00000064  4800      LDR         R0,=0xE0014050
+ 00000066  6001      STR         R1,[R0,#0x0]
+   33:     }
+ 00000068  E7CF      B           L_3  ; T=0x0000000A
+   35: }
+ 0000006A  BC08      POP         {R3}
+ 0000006C  4718      BX          R3
+ 0000006E          ENDP ; 'main'
+
+
+*** CODE SEGMENT '?PR?initPWM?T?PWM_LED':
+   38:   PINSEL0 = (PINSEL0 & ~(1 << 16)) | (1 << 17); // Select PWM4 output for Pin0.8
+ 00000000  4800      LDR         R0,=0xE002C000
+ 00000002  6801      LDR         R1,[R0,#0x0]
+ 00000004  4800      LDR         R0,=0x10000
+ 00000006  4381      BIC         R1,R0
+ 00000008  4800      LDR         R0,=0x20000
+ 0000000A  4301      ORR         R1,R0
+ 0000000C  4800      LDR         R0,=0xE002C000
+ 0000000E  6001      STR         R1,[R0,#0x0]
+   39:   PWMPCR = 0x0; //Select Single Edge PWM - by default its single Edged so this line can be removed
+ 00000010  2100      MOV         R1,#0x0
+ 00000012  4800      LDR         R0,=0xE001404C
+ 00000014  6001      STR         R1,[R0,#0x0]
+   40:   PWMPR = 60-1; // 1 micro-second resolution
+ 00000016  213B      MOV         R1,#0x3B
+ 00000018  4800      LDR         R0,=0xE001400C
+ 0000001A  6001      STR         R1,[R0,#0x0]
+   41:   PWMMR0 = 10000; // 10ms period duration
+ 0000001C  4800      LDR         R1,=0x2710
+ 0000001E  4800      LDR         R0,=0xE0014018
+ 00000020  6001      STR         R1,[R0,#0x0]
+   42:   PWMMR4 = 500; // 0.5ms - pulse duration i.e width (Brigtness level)
+ 00000022  497D      LDR         R1,=0x1F4
+ 00000024  4800      LDR         R0,=0xE0014040
+ 00000026  6001      STR         R1,[R0,#0x0]
+   43:   PWMMCR = (1<<1); // Reset PWMTC on PWMMR0 match
+ 00000028  2102      MOV         R1,#0x2
+ 0000002A  4800      LDR         R0,=0xE0014014
+ 0000002C  6001      STR         R1,[R0,#0x0]
+   44:   PWMLER = (1<<0)|(1<<4); // update MR0 and MR4
+ 0000002E  2111      MOV         R1,#0x11
+ 00000030  4800      LDR         R0,=0xE0014050
+ 00000032  6001      STR         R1,[R0,#0x0]
+   45:   PWMPCR = (1<<12); // enable PWM output
+ 00000034  4800      LDR         R1,=0x1000
+ 00000036  4800      LDR         R0,=0xE001404C
+ 00000038  6001      STR         R1,[R0,#0x0]
+   46:   PWMTCR = (1<<1) ; //Reset PWM TC & PR
+ARM COMPILER V2.40a,  PWM_LED                                                              10/09/23  07:56:02  PAGE 5   
+
+ 0000003A  2102      MOV         R1,#0x2
+ 0000003C  4800      LDR         R0,=0xE0014004
+ 0000003E  6001      STR         R1,[R0,#0x0]
+   48:   PWMTCR = (1<<0) | (1<<3); // enable counters and PWM Mode
+ 00000040  2109      MOV         R1,#0x9
+ 00000042  4800      LDR         R0,=0xE0014004
+ 00000044  6001      STR         R1,[R0,#0x0]
+   51: }
+ 00000046  4770      BX          R14
+ 00000048          ENDP ; 'initPWM?T'
+
+
+*** CODE SEGMENT '?PR?initClocks?T?PWM_LED':
+   54:   PLL0CON = 0x01;   //Enable PLL
+ 00000000  2101      MOV         R1,#0x1
+ 00000002  4800      LDR         R0,=0xE01FC080
+ 00000004  7001      STRB        R1,[R0,#0x0]
+   55:   PLL0CFG = 0x24;   //Multiplier and divider setup
+ 00000006  2124      MOV         R1,#0x24
+ 00000008  4800      LDR         R0,=0xE01FC084
+ 0000000A  7001      STRB        R1,[R0,#0x0]
+   56:   PLL0FEED = 0xAA;  //Feed sequence
+ 0000000C  21AA      MOV         R1,#0xAA
+ 0000000E  4800      LDR         R0,=0xE01FC08C
+ 00000010  7001      STRB        R1,[R0,#0x0]
+   57:   PLL0FEED = 0x55;
+ 00000012  2155      MOV         R1,#0x55
+ 00000014  4800      LDR         R0,=0xE01FC08C
+ 00000016  7001      STRB        R1,[R0,#0x0]
+   59:   while(!(PLL0STAT & 0x00000400)); //is locked?
+ 00000018          L_12:
+ 00000018  4800      LDR         R0,=0xE01FC088
+ 0000001A  8800      LDRH        R0,[R0,#0x0]
+ 0000001C  4800      LDR         R1,=0x400
+ 0000001E  4208      TST         R0,R1
+ 00000020  D0FA      BEQ         L_12  ; T=0x00000018
+   61:   PLL0CON = 0x03;   //Connect PLL after PLL is locked
+ 00000022  2103      MOV         R1,#0x3
+ 00000024  4800      LDR         R0,=0xE01FC080
+ 00000026  7001      STRB        R1,[R0,#0x0]
+   62:   PLL0FEED = 0xAA;  //Feed sequence
+ 00000028  21AA      MOV         R1,#0xAA
+ 0000002A  4800      LDR         R0,=0xE01FC08C
+ 0000002C  7001      STRB        R1,[R0,#0x0]
+   63:   PLL0FEED = 0x55;
+ 0000002E  2155      MOV         R1,#0x55
+ 00000030  4800      LDR         R0,=0xE01FC08C
+ 00000032  7001      STRB        R1,[R0,#0x0]
+   64:   VPBDIV = 0x01;    // PCLK is same as CCLK i.e.60 MHz
+ 00000034  2101      MOV         R1,#0x1
+ 00000036  4800      LDR         R0,=0xE01FC100
+ 00000038  7001      STRB        R1,[R0,#0x0]
+ 0000003A  4770      BX          R14
+ 0000003C          ENDP ; 'initClocks?T'
+
+
+
+Module Information          Static
+----------------------------------
+  code size            =    ------
+  data size            =    ------
+  const size           =    ------
+End of Module Information.
+
+
+ARM COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
